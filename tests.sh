@@ -30,6 +30,14 @@
 ## expect_signal_message <sig> <message> : Signal will be sent to child process
 ##                                         and stderr must be equal to the message
 
+
+## Each command can be prefixed by:
+
+## WITH_ENV="KEY=value KEY2=value2" : Specify which environment variables
+##                                    must be passed to mysh using `env` command.
+##                                    Not recommended with *_match commands.
+##                                    WITH_ENV="-i" is equivalent to `env -i ./mysh`.
+
 tests()
 {
 
@@ -66,6 +74,9 @@ tests()
 
     # ENV
     expect_env_match "env"
+
+    WITH_ENV="-i" \
+    expect_stdout_equals "env" ""
 
     # EXIT
     expect_exit_code "exit" 0
