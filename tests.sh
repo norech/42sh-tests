@@ -42,6 +42,16 @@ tests()
     WITH_ENV="PATH=" \
     expect_stderr_equals "ls" "ls: Command not found." # no PATH to be found
 
+    # FORMATTING & SPACING
+    expect_stdout_match " ls -a"
+    expect_stdout_match " ls  -a"
+    expect_stdout_match $'     ls\t\t -a'
+    expect_stdout_match $'     ls\t\t -a\t'
+    expect_stdout_match $'ls -a\t'
+    expect_stdout_match $'ls \t-a\t'
+    expect_stdout_match $'ls\t-a'
+    expect_stdout_match $'\tls -a\t'
+
     # SETENV
     expect_env_match "setenv A b"
     expect_env_match "setenv AB0 b"
@@ -103,12 +113,14 @@ fi
 PASSED=""
 FAILED=""
 
-pass() {
+pass()
+{
     echo "Passed"
     PASSED+=1
 }
 
-fail() {
+fail()
+{
     echo "Failed: $@"
     FAILED+=1
 }
