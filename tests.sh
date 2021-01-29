@@ -360,6 +360,7 @@ expect_stderr_equals()
 cleanup()
 {
     pkill -P $$
+    exit
 }
 
 total() {
@@ -368,7 +369,7 @@ total() {
     echo "Tests passed: $(echo -n $PASSED | wc -m). Tests failed: $(echo -n $FAILED | wc -m)."
 }
 
-trap EXIT cleanup
+trap cleanup 2
 
 tests
 total
