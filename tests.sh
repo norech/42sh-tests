@@ -29,8 +29,8 @@
 ## expect_exit_code <command> <code> : Command will be executed on mysh
 ##                                     and its exit code must be equal to code
 
-## expect_signal_message <sig> <message> : Signal will be sent to child process
-##                                         and stderr must be equal to the message
+## expect_signal_message_match <sig> : Signal will be sent to child process
+##                                     and stderr must be equal to the tcsh one
 
 
 ## Each command can be prefixed by:
@@ -103,11 +103,11 @@ tests()
     expect_pwd_match "setenv PWD /home"
 
     # SIGNALS
-    expect_signal_message SIGSEGV "Segmentation fault (core dumped)"
-    expect_signal_message SIGFPE  "Floating exception (core dumped)"
+    expect_signal_message_match SIGSEGV
+    expect_signal_message_match SIGFPE
 
     WITHOUT_COREDUMP=1 \
-    expect_signal_message SIGSEGV "Segmentation fault"
+    expect_signal_message_match SIGSEGV
 
 }
 
@@ -167,7 +167,7 @@ expect_exit_code()
     pass
 }
 
-expect_signal_message()
+expect_signal_message_match()
 {
     local without_core_dump="$WITHOUT_COREDUMP"
     local signal_id="$(get_signal_id $1)"
@@ -183,7 +183,7 @@ expect_signal_message()
         echo "Without core dump"
     fi
     echo "-----"
-    echo "Expectation: When executed program send a $1 signal ($signal_id), mysh must print '$2' in stderr"
+    echo "Expectation: When executed program send a $1 signal ($signal_id), mysh stderr must match with tcsh"
     echo "---"
 
 
@@ -191,12 +191,23 @@ expect_signal_message()
         build_signal_sender
     fi
 
-    DIFF=$(diff --color=always <(echo "$2") <(echo "/tmp/__minishell_segv $without_core_dump $signal_id" | ./mysh 2>&1 1>/dev/null))
+    TCSH_OUTPUT=$(echo "/tmp/__minishell_segv $without_core_dump $signal_id" | tcsh 2>&1 1>/dev/null)
+    EXIT1=$?
+
+    MYSH_OUTPUT=$(echo "/tmp/__minishell_segv $without_core_dump $signal_id" | ./mysh 2>&1 1>/dev/null)
+    EXIT2=$?
+
+    DIFF=$(diff --color=always <(echo "$TCSH_OUTPUT") <(echo "$MYSH_OUTPUT"))
     if [[ $DIFF != "" ]]; then
-        echo "< expect    > mysh"
+        echo "< tcsh    > mysh"
         echo
         echo "$DIFF"
         fail "Output are different."
+        return
+    fi
+
+    if [[ $EXIT1 != $EXIT2 ]]; then
+        fail "Exit code are different (expected $EXIT1, got $EXIT2)."
         return
     fi
     pass
