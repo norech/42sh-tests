@@ -94,8 +94,8 @@ tests()
     expect_pwd_match "setenv PWD /home"
 
     # SIGNALS
-    expect_signal_message SIGSEGV "Segmentation fault (core dump)"
-    expect_signal_message SIGFPE  "Floating exception (core dump)"
+    expect_signal_message SIGSEGV "Segmentation fault (core dumped)"
+    expect_signal_message SIGFPE  "Floating exception (core dumped)"
 
 
 }
