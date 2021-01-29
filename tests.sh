@@ -357,12 +357,31 @@ expect_stderr_equals()
     pass
 }
 
+list_descendants ()
+{
+  local children=$(ps -o pid= --ppid "$1")
+
+  for pid in $children
+  do
+    list_descendants "$pid"
+  done
+
+  echo "$children"
+}
+
+cleanup()
+{
+    pkill -P $$
+}
+
 total() {
     echo ""
     echo ""
     echo "Tests passed: $(echo -n $PASSED | wc -m). Tests failed: $(echo -n $FAILED | wc -m)."
 }
 
+trap EXIT cleanup
 
 tests
 total
+cleanup
