@@ -48,6 +48,8 @@ tests()
     expect_stdout_match "ls"
     expect_stdout_match "/bin/ls" # full path
     expect_stdout_match "ls -a"
+    expect_stderr_match "egegrgrgegergre" # not existing binary
+    expect_stderr_match "uyiuoijuuyyiy" # not existing binary 2
 
     WITH_ENV="PATH=" \
     expect_stderr_equals "ls" "ls: Command not found." # no PATH to be found
