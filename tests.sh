@@ -72,6 +72,7 @@ tests()
     expect_env_match "setenv A_B0 b"
     expect_env_match "setenv A_C b"
     expect_env_match "setenv A"   # variables can be set with one argument
+    expect_env_match "setenv"
 
     expect_stderr_match "setenv -A b" # variables must start with a letter
     expect_stderr_match "setenv 0A b" # variables must start with a letter
@@ -82,7 +83,7 @@ tests()
     expect_env_match "env"
 
     WITH_ENV="-i" \
-    expect_stdout_equals "env" ""
+    expect_exit_code "env" 0
 
     # EXIT
     expect_exit_code "" 0 # no command executed
@@ -156,7 +157,7 @@ expect_exit_code()
     echo "---"
     EXIT1=$2
 
-    echo "$1" | ./mysh 2>&1
+    echo "$1" | env $WITH_ENV ./mysh 2>&1
     EXIT2=$?
 
     if [[ $EXIT1 != $EXIT2 ]]; then
