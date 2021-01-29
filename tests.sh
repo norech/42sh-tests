@@ -229,7 +229,7 @@ expect_pwd_match()
 
 expect_env_match()
 {
-    SAMPLE_ENV="HOSTTYPE=$HOSTTYPE VENDOR=$VENDOR OSTYPE=$OSTYPE MACHTYPE=$MACHTYPE LOGNAME=$LOGNAME USER=$USER GROUP=$GROUP HOST=$HOST PWD=$PWD"
+    SAMPLE_ENV="USER=$USER GROUP=$GROUP PWD=$PWD"
     echo ""
     echo ""
     echo "$@"
@@ -239,7 +239,7 @@ expect_env_match()
         echo "With environment variables: $WITH_ENV"
     fi
     echo "---"
-    DIFF=$(diff --color=always <(echo "$@"$'\n'"env" | env -i $SAMPLE_ENV tcsh 2>&1 | grep -v "^SHLVL=") <(echo "$@"$'\n'"env" | env -i $SAMPLE_ENV $WITH_ENV ./mysh 2>&1 | grep -v "^SHLVL="))
+    DIFF=$(diff --color=always <(echo "$@"$'\n'"env" | env -i $SAMPLE_ENV tcsh 2>&1 | grep -v -e "^SHLVL=" -e "^HOSTTYPE=" -e "^VENDOR=" -e "^OSTYPE=" -e "^MACHTYPE=" -e "^LOGNAME=" -e "^HOST=") <(echo "$@"$'\n'"env" | env -i $SAMPLE_ENV $WITH_ENV ./mysh 2>&1 | grep -v -e "^SHLVL=" -e "^HOSTTYPE=" -e "^VENDOR=" -e "^OSTYPE=" -e "^MACHTYPE=" -e "^LOGNAME=" -e "^HOST="))
     if [[ $DIFF != "" ]]; then
         echo "< tcsh    > mysh"
         echo
