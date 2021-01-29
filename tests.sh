@@ -240,7 +240,7 @@ expect_env_match()
         echo "With environment variables: $WITH_ENV"
     fi
     echo "---"
-    DIFF=$(diff --color=always <(echo "$@"$'\n'"env" | tcsh 2>&1 | grep -v -e "^SHLVL=" -e "^HOSTTYPE=" -e "^VENDOR=" -e "^OSTYPE=" -e "^MACHTYPE=" -e "^LOGNAME=" -e "^HOST=" -e "^_=") <(echo "$@"$'\n'"env" | env $WITH_ENV ./mysh 2>&1 | grep -v -e "^SHLVL=" -e "^HOSTTYPE=" -e "^VENDOR=" -e "^OSTYPE=" -e "^MACHTYPE=" -e "^LOGNAME=" -e "^HOST=" -e "^_="))
+    DIFF=$(diff --color=always <(echo "$@"$'\n'"env" | tcsh 2>&1 | grep -v -e "^SHLVL=" -e "^HOSTTYPE=" -e "^VENDOR=" -e "^OSTYPE=" -e "^MACHTYPE=" -e "^LOGNAME=" -e "^HOST=" -e "^GROUP=" -e "^_=") <(echo "$@"$'\n'"env" | env $WITH_ENV ./mysh 2>&1 | grep -v -e "^SHLVL=" -e "^HOSTTYPE=" -e "^VENDOR=" -e "^OSTYPE=" -e "^MACHTYPE=" -e "^LOGNAME=" -e "^HOST=" -e "^GROUP=" -e "^_="))
     if [[ $DIFF != "" ]]; then
         echo "< tcsh    > mysh"
         echo
