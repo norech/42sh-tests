@@ -94,6 +94,7 @@ tests()
     expect_stderr_match "cd /root" # no permissions to access folder error
     expect_stderr_match "cd /htyg/grrggfghfgdhgfghg" # folder not found error
 
+    expect_pwd_match "cd ~"
     expect_pwd_match "cd /"
     expect_pwd_match $'cd /\ncd -' # change path then go back to last path => cd -
     expect_pwd_match "unsetenv PWD"
