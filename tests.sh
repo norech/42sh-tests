@@ -97,6 +97,8 @@ tests()
     expect_signal_message SIGSEGV "Segmentation fault (core dumped)"
     expect_signal_message SIGFPE  "Floating exception (core dumped)"
 
+    CORE_DUMP=0 \
+    expect_signal_message SIGSEGV "Segmentation fault"
 
 }
 
@@ -158,29 +160,36 @@ expect_exit_code()
 
 expect_signal_message()
 {
+    local core_dump="$CORE_DUMP"
+    local signal_id="$(get_signal_id $1)"
+
+    if [[ -z $core_dump ]]; then
+        core_dump=1
+    fi
+
     echo ""
     echo ""
     echo "SIGNAL: $1"
+    if [[ "$core_dump" == "0" ]]; then
+        echo "Without core dump"
+    fi
     echo "-----"
-    echo "Expectation: When executed program send a $1 signal, mysh must print '$2' in stderr"
+    echo "Expectation: When executed program send a $1 signal ($signal_id), mysh must print '$2' in stderr"
     echo "---"
 
-    echo "yes" | ./mysh 1>/dev/null 2>/tmp/__minishell_test.log &
-    sleep 0.15
-    killall -s $1 yes
-    wait
-    OUTPUT=$(cat /tmp/__minishell_test.log)
 
-    DIFF=$(diff --color=always <(echo "$2") <(echo "$OUTPUT"))
+    if [[ ! -f /tmp/__minishell_segv ]]; then
+        build_signal_sender
+    fi
+
+    DIFF=$(diff --color=always <(echo "$2") <(echo "/tmp/__minishell_segv $core_dump $signal_id" | ./mysh 2>&1 1>/dev/null))
     if [[ $DIFF != "" ]]; then
         echo "< expect    > mysh"
         echo
         echo "$DIFF"
         fail "Output are different."
-        rm /tmp/__minishell_test.log
         return
     fi
-    rm /tmp/__minishell_test.log
     pass
 }
 
@@ -357,9 +366,37 @@ expect_stderr_equals()
     pass
 }
 
+get_signal_id()
+{
+    trap -l | sed -nr 's/.*\b([0-9]+)\) '$1'.*/\1/p'
+}
+
+build_signal_sender()
+{
+    echo "
+        #include <sys/prctl.h>
+        #include <sys/types.h>
+        #include <signal.h>
+        #include <unistd.h>
+        #include <stdlib.h>
+
+        int main(int argc, char **argv)
+        {
+            if (argc != 3)
+                return (84);
+            prctl(PR_SET_DUMPABLE, atoi(argv[1]) == 1);
+            kill(getpid(), atoi(argv[2]));
+            while (1);
+        }
+    " >/tmp/__minishell_segv_code.c
+
+    gcc -o /tmp/__minishell_segv /tmp/__minishell_segv_code.c
+}
+
 cleanup()
 {
     pkill -P $$
+    rm /tmp/__minishell_*
     exit
 }
 
