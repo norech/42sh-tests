@@ -38,6 +38,8 @@
 ##                                    Not recommended with *_match commands.
 ##                                    WITH_ENV="-i" is equivalent to `env -i ./mysh`.
 
+## WITHOUT_COREDUMP=1 : When value is 1, disable core dump.
+
 tests()
 {
 
@@ -97,7 +99,7 @@ tests()
     expect_signal_message SIGSEGV "Segmentation fault (core dumped)"
     expect_signal_message SIGFPE  "Floating exception (core dumped)"
 
-    CORE_DUMP=0 \
+    WITHOUT_COREDUMP=1 \
     expect_signal_message SIGSEGV "Segmentation fault"
 
 }
@@ -160,17 +162,17 @@ expect_exit_code()
 
 expect_signal_message()
 {
-    local core_dump="$CORE_DUMP"
+    local without_core_dump="$WITHOUT_COREDUMP"
     local signal_id="$(get_signal_id $1)"
 
-    if [[ -z $core_dump ]]; then
-        core_dump=1
+    if [[ -z $without_core_dump ]]; then
+        without_core_dump=0
     fi
 
     echo ""
     echo ""
     echo "SIGNAL: $1"
-    if [[ "$core_dump" == "0" ]]; then
+    if [[ "$without_core_dump" == "1" ]]; then
         echo "Without core dump"
     fi
     echo "-----"
@@ -182,7 +184,7 @@ expect_signal_message()
         build_signal_sender
     fi
 
-    DIFF=$(diff --color=always <(echo "$2") <(echo "/tmp/__minishell_segv $core_dump $signal_id" | ./mysh 2>&1 1>/dev/null))
+    DIFF=$(diff --color=always <(echo "$2") <(echo "/tmp/__minishell_segv $without_core_dump $signal_id" | ./mysh 2>&1 1>/dev/null))
     if [[ $DIFF != "" ]]; then
         echo "< expect    > mysh"
         echo
@@ -227,7 +229,7 @@ expect_pwd_match()
 
 expect_env_match()
 {
-    SAMPLE_ENV="HOSTTYPE=x86_64-linux VENDOR=unknown OSTYPE=linux MACHTYPE=x86_64 LOGNAME=alexis USER=alexis GROUP=alexis HOST=fedora PWD=$PWD"
+    SAMPLE_ENV="HOSTTYPE=$HOSTTYPE VENDOR=$VENDOR OSTYPE=$OSTYPE MACHTYPE=$MACHTYPE LOGNAME=$LOGNAME USER=$USER GROUP=$GROUP HOST=$HOST PWD=$PWD"
     echo ""
     echo ""
     echo "$@"
@@ -384,7 +386,7 @@ build_signal_sender()
         {
             if (argc != 3)
                 return (84);
-            prctl(PR_SET_DUMPABLE, atoi(argv[1]) == 1);
+            prctl(PR_SET_DUMPABLE, atoi(argv[1]) == 0);
             kill(getpid(), atoi(argv[2]));
             while (1);
         }
