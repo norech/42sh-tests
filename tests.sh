@@ -85,6 +85,7 @@ tests()
     expect_stdout_equals "env" ""
 
     # EXIT
+    expect_exit_code "" 0 # no command executed
     expect_exit_code "exit" 0
     expect_exit_code "exit 24" 24
     expect_exit_code "exit 18" 18
@@ -244,7 +245,9 @@ expect_env_match()
         echo "With environment variables: $WITH_ENV"
     fi
     echo "---"
-    DIFF=$(diff --color=always <(echo "$@"$'\n'"env" | env -i $SAMPLE_ENV tcsh 2>&1 | grep -v -e "^SHLVL=" -e "^HOSTTYPE=" -e "^VENDOR=" -e "^OSTYPE=" -e "^MACHTYPE=" -e "^LOGNAME=" -e "^HOST=" -e "^GROUP=" -e "^_=") <(echo "$@"$'\n'"env" | env -i $SAMPLE_ENV $WITH_ENV ./mysh 2>&1 | grep -v -e "^SHLVL=" -e "^HOSTTYPE=" -e "^VENDOR=" -e "^OSTYPE=" -e "^MACHTYPE=" -e "^LOGNAME=" -e "^HOST=" -e "^GROUP=" -e "^_="))
+    TCSH_OUTPUT="$(echo "$@"$'\n'"env" | env -i $SAMPLE_ENV tcsh 2>&1 | clean_env)"
+    MYSH_OUTPUT="$(echo "$@"$'\n'"env" | env -i $SAMPLE_ENV $WITH_ENV ./mysh 2>&1 | clean_env)"
+    DIFF=$(diff --color=always <(echo $TCSH_OUTPUT) <(echo $MYSH_OUTPUT))
     if [[ $DIFF != "" ]]; then
         echo "< tcsh    > mysh"
         echo
@@ -371,6 +374,19 @@ expect_stderr_equals()
         return
     fi
     pass
+}
+
+clean_env()
+{
+    grep -v -e "^SHLVL=" \
+            -e "^HOSTTYPE=" \
+            -e "^VENDOR=" \
+            -e "^OSTYPE=" \
+            -e "^MACHTYPE=" \
+            -e "^LOGNAME=" \
+            -e "^HOST=" \
+            -e "^GROUP=" \
+            -e "^_="
 }
 
 get_signal_id()
