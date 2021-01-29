@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# REPOSITORY: https://github.com/norech/42sh-tests
+
 ## Available commands:
 
 ## expect_stdout_match <command>  : Command will be executed on both mysh
