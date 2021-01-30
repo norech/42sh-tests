@@ -49,9 +49,13 @@ tests()
     # EXECUTE COMMANDS
     expect_stdout_match "ls"
     expect_stdout_match "/bin/ls" # full path
+    expect_stdout_match "/bin/ls -a" # full path with args
     expect_stdout_match "ls -a"
     expect_stderr_match "egegrgrgegergre" # not existing binary
     expect_stderr_match "uyiuoijuuyyiy" # not existing binary 2
+
+    expect_stdout_match "./$(basename "$0") --helloworld" # relative path (./tests.sh --helloworld)
+    expect_stdout_match "../$(basename $PWD)/$(basename "$0") --helloworld" # relative path (../parentdir/tests.sh --helloworld)
 
     WITH_ENV="PATH=" \
     expect_stderr_equals "ls" "ls: Command not found." # no PATH to be found
@@ -105,9 +109,20 @@ tests()
     # SIGNALS
     expect_signal_message_match SIGSEGV
     expect_signal_message_match SIGFPE
+    expect_signal_message_match SIGBUS
+    expect_signal_message_match SIGABRT
 
     WITHOUT_COREDUMP=1 \
     expect_signal_message_match SIGSEGV
+
+    WITHOUT_COREDUMP=1 \
+    expect_signal_message_match SIGFPE
+
+    WITHOUT_COREDUMP=1 \
+    expect_signal_message_match SIGBUS
+
+    WITHOUT_COREDUMP=1 \
+    expect_signal_message_match SIGABRT
 
 }
 
@@ -121,6 +136,11 @@ tests()
 #------------------------------------------------------------------------------------
 # Here be dragons
 #------------------------------------------------------------------------------------
+
+if [[ $1 == "--helloworld" ]]; then
+    echo "Hello world!"
+    exit 42
+fi
 
 if ! which tcsh >/dev/null; then
     echo "Run: dnf install tcsh"
