@@ -54,11 +54,15 @@ tests()
     expect_stderr_match "egegrgrgegergre" # not existing binary
     expect_stderr_match "uyiuoijuuyyiy" # not existing binary 2
 
-    expect_stdout_match "./$(basename "$0") --helloworld" # relative path (./tests.sh --helloworld)
-    expect_stdout_match "../$(basename $PWD)/$(basename "$0") --helloworld" # relative path (../parentdir/tests.sh --helloworld)
-
     WITH_ENV="PATH=" \
     expect_stderr_equals "ls" "ls: Command not found." # no PATH to be found
+
+
+    # EXECUTE COMMANDS - relative paths
+    if [ -t 0 ]; then # if is a tty, avoids recursion problems
+        expect_stdout_match "./$(basename "$0") --helloworld" # ./tests.sh --helloworld
+        expect_stdout_match "../$(basename $PWD)/$(basename "$0") --helloworld" # ../parentdir/tests.sh --helloworld
+    fi
 
     # FORMATTING & SPACING
     expect_stdout_match " ls -a"
