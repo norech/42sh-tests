@@ -220,7 +220,7 @@ expect_signal_message_match()
         build_signal_sender
     fi
 
-    TCSH_OUTPUT=$(echo "/tmp/__minishell_segv $without_core_dump $signal_id" | tcsh 2>&1 1>/dev/null)
+    TCSH_OUTPUT=$(echo "/tmp/__minishell_segv $without_core_dump $signal_id" | tcsh 2>&1 1>/dev/null | clean_tcsh_stderr)
     EXIT1=0 # Marvin does not like a 139 exit code (it probably thinks we crashed), so instead, check for returning 0
 
     MYSH_OUTPUT=$(echo "/tmp/__minishell_segv $without_core_dump $signal_id" | ./mysh 2>&1 1>/dev/null)
@@ -286,7 +286,7 @@ expect_env_match()
         echo "With environment variables: $WITH_ENV"
     fi
     echo "---"
-    TCSH_OUTPUT="$(echo "$@"$'\n'"env" | env -i $SAMPLE_ENV tcsh 2>&1 | clean_env)"
+    TCSH_OUTPUT="$(echo "$@"$'\n'"env" | env -i $SAMPLE_ENV tcsh 2>&1 | clean_env | clean_tcsh_stderr)"
     MYSH_OUTPUT="$(echo "$@"$'\n'"env" | env -i $SAMPLE_ENV $WITH_ENV ./mysh 2>&1 | clean_env)"
     DIFF=$(diff --color=always <(echo $TCSH_OUTPUT) <(echo $MYSH_OUTPUT))
     if [[ $DIFF != "" ]]; then
@@ -374,7 +374,7 @@ expect_stderr_match()
         echo "With environment variables: $WITH_ENV"
     fi
     echo "---"
-    DIFF=$(diff --color=always <(echo "$(echo "$@" | tcsh 2>&1 >/dev/null)") <(echo "$(echo "$@" | env $ENV_VAR ./mysh 2>&1 >/dev/null)"))
+    DIFF=$(diff --color=always <(echo "$(echo "$@" | tcsh 2>&1 >/dev/null | clean_tcsh_stderr)") <(echo "$(echo "$@" | env $ENV_VAR ./mysh 2>&1 >/dev/null)"))
     if [[ $DIFF != "" ]]; then
         echo "< tcsh    > mysh"
         echo
@@ -415,6 +415,11 @@ expect_stderr_equals()
         return
     fi
     pass
+}
+
+clean_tcsh_stderr()
+{
+    grep -v -e "builtin: not found" # patch for `builin: not found` with proprietary drivers
 }
 
 clean_env()
