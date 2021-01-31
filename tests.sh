@@ -133,12 +133,19 @@ if [[ $1 == "--helloworld" ]]; then
 fi
 
 if ! which tcsh >/dev/null; then
-    echo "Run: dnf install tcsh"
+    cat <<EOF
+tcsh was not found on your system.
+tcsh is required to be able to test your shell, as it is the reference shell
+Please install tcsh (On Fedora, you can do this via `dnf install tcsh`)
+EOF
     exit 84
 fi
 
 if [[ ! -f "./mysh" ]]; then
-    echo "./mysh not found"
+    cat <<EOF
+./mysh was not found.
+It is required that mysh be in the same directory as this script (means of doing so include moving the script to the directory containing a mysh executable).
+EOF
     exit 84
 fi
 
