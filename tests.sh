@@ -208,8 +208,8 @@ expect_signal_message_match()
         build_signal_sender
     fi
 
-    TCSH_OUTPUT=$(echo "/tmp/__minishell_segv $without_core_dump $signal_id" | tcsh 2>&1 1>/dev/null)
-    EXIT1=0 # apparently, marvin does not like 139 exit code, so we return 0
+    TCSH_OUTPUT=$(echo "/tmp/__minishell_segv $without_core_dump $signal_id" | tcsh 2>&1 1>/dev/null | clean_tcsh_stderr)
+    EXIT1=0 # Marvin does not like a 139 exit code (it probably thinks we crashed), so instead, check for returning 0
 
     MYSH_OUTPUT=$(echo "/tmp/__minishell_segv $without_core_dump $signal_id" | ./mysh 2>&1 1>/dev/null)
     EXIT2=$?
@@ -224,7 +224,7 @@ expect_signal_message_match()
     fi
 
     if [[ $EXIT1 != $EXIT2 ]]; then
-        fail "Exit code are different (expected $EXIT1, got $EXIT2)."
+        fail "Exit code are different (expected $EXIT1, got $EXIT2). (Note: while tcsh actually returns 139, we assume it returns 0 because Marvin doesn't like it if you return 139)"
         return
     fi
     pass
@@ -272,7 +272,7 @@ expect_env_match()
         echo "With environment variables: $WITH_ENV"
     fi
     echo "---"
-    TCSH_OUTPUT="$(echo "$@"$'\n'"env" | env -i $SAMPLE_ENV tcsh 2>&1 | clean_env)"
+    TCSH_OUTPUT="$(echo "$@"$'\n'"env" | env -i $SAMPLE_ENV tcsh 2>&1 | clean_env | clean_tcsh_stderr)"
     MYSH_OUTPUT="$(echo "$@"$'\n'"env" | env -i $SAMPLE_ENV $WITH_ENV ./mysh 2>&1 | clean_env)"
     DIFF=$(diff --color=always <(echo $TCSH_OUTPUT) <(echo $MYSH_OUTPUT))
     if [[ $DIFF != "" ]]; then
@@ -357,7 +357,7 @@ expect_stderr_match()
         echo "With environment variables: $WITH_ENV"
     fi
     echo "---"
-    DIFF=$(diff --color=always <(echo "$(echo "$@" | tcsh 2>&1 >/dev/null)") <(echo "$(echo "$@" | env $ENV_VAR ./mysh 2>&1 >/dev/null)"))
+    DIFF=$(diff --color=always <(echo "$(echo "$@" | tcsh 2>&1 >/dev/null | clean_tcsh_stderr)") <(echo "$(echo "$@" | env $ENV_VAR ./mysh 2>&1 >/dev/null)"))
     if [[ $DIFF != "" ]]; then
         echo "< tcsh    > mysh"
         echo
@@ -399,6 +399,11 @@ expect_stderr_equals()
     pass
 }
 
+clean_tcsh_stderr()
+{
+    grep -v -e "builtin: not found" # patch for `builin: not found` with proprietary drivers
+}
+
 clean_env()
 {
     grep -v -e "^SHLVL=" \
@@ -419,22 +424,22 @@ get_signal_id()
 
 build_signal_sender()
 {
-    echo "
-        #include <sys/prctl.h>
-        #include <sys/types.h>
-        #include <signal.h>
-        #include <unistd.h>
-        #include <stdlib.h>
+    cat <<EOF >/tmp/__minishell_segv_code.c
+#include <stdlib.h>
+#include <signal.h>
+#include <unistd.h>
+#include <sys/prctl.h>
+#include <sys/types.h>
 
-        int main(int argc, char **argv)
-        {
-            if (argc != 3)
-                return (84);
-            prctl(PR_SET_DUMPABLE, atoi(argv[1]) == 0);
-            kill(getpid(), atoi(argv[2]));
-            while (1);
-        }
-    " >/tmp/__minishell_segv_code.c
+int main(int argc, char **argv)
+{
+    if (argc != 3)
+        return (84);
+    prctl(PR_SET_DUMPABLE, atoi(argv[1]) == 0);
+    kill(getpid(), atoi(argv[2]));
+    while (1);
+}
+EOF
 
     gcc -o /tmp/__minishell_segv /tmp/__minishell_segv_code.c
 }
