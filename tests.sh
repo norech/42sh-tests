@@ -101,6 +101,9 @@ tests()
     expect_stderr_match "cd -"     # previous env was not set
     expect_stderr_match "cd /root" # no permissions to access folder error
     expect_stderr_match "cd /htyg/grrggfghfgdhgfghg" # folder not found error
+    expect_stderr_match "exit a"
+    expect_stderr_match "exit 2a"
+    expect_stderr_match "exit a b"
 
     expect_pwd_match "cd ~"
     expect_pwd_match "cd /"
