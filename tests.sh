@@ -144,7 +144,7 @@ fi
 if [[ ! -f "./mysh" ]]; then
     cat <<EOF
 ./mysh does not exist.
-It is required that a mysh executable be in the same directory as this script (possible means of satisfying this requirement include moving this script to a directory containing a mysh executable).
+It is required that a mysh executable be in the same directory as this script in order to test it (possible means of satisfying this requirement include moving this script to a directory containing a mysh executable).
 EOF
     exit 84
 fi
