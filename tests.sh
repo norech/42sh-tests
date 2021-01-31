@@ -44,8 +44,6 @@
 
 tests()
 {
-
-
     # EXECUTE COMMANDS
     expect_stdout_match "ls"
     expect_stdout_match "/bin/ls" # full path
@@ -128,15 +126,7 @@ tests()
 
     WITHOUT_COREDUMP=1 \
     expect_signal_message_match SIGABRT
-
 }
-
-
-
-
-
-
-
 
 #------------------------------------------------------------------------------------
 # Here be dragons
@@ -178,8 +168,7 @@ fail()
 
 expect_exit_code()
 {
-    echo ""
-    echo ""
+    printf "\n\n"
     echo "$1"
     echo "-----"
     echo "Expectation: Exit code must be $2"
@@ -205,8 +194,7 @@ expect_signal_message_match()
         without_core_dump=0
     fi
 
-    echo ""
-    echo ""
+    printf "\n\n"
     echo "SIGNAL: $1"
     if [[ "$without_core_dump" == "1" ]]; then
         echo "Without core dump"
@@ -244,8 +232,7 @@ expect_signal_message_match()
 
 expect_pwd_match()
 {
-    echo ""
-    echo ""
+    printf "\n\n"
     echo "$@"
     echo "-----"
     echo "Expectation: PWD in environment variable must match with tcsh after the command"
@@ -277,8 +264,7 @@ expect_pwd_match()
 expect_env_match()
 {
     SAMPLE_ENV="USER=$USER GROUP=$GROUP PWD=$PWD"
-    echo ""
-    echo ""
+    printf "\n\n"
     echo "$@"
     echo "-----"
     echo "Expectation: Env must match with tcsh after the command"
@@ -311,8 +297,7 @@ expect_env_match()
 
 expect_stdout_match()
 {
-    echo ""
-    echo ""
+    printf "\n\n"
     echo "$@"
     echo "-----"
     echo "Expectation: Command stdout must match with tcsh"
@@ -343,8 +328,7 @@ expect_stdout_match()
 
 expect_stdout_equals()
 {
-    echo ""
-    echo ""
+    printf "\n\n"
     echo "$1"
     echo "-----"
     echo "Expectation: Command stdout must equal '$2'"
@@ -365,8 +349,7 @@ expect_stdout_equals()
 
 expect_stderr_match()
 {
-    echo ""
-    echo ""
+    printf "\n\n"
     echo "$@"
     echo "-----"
     echo "Expectation: Command stderr must match with tcsh"
@@ -397,8 +380,7 @@ expect_stderr_match()
 
 expect_stderr_equals()
 {
-    echo ""
-    echo ""
+    printf "\n\n"
     echo "$1"
     echo "-----"
     echo "Expectation: Command stderr must equal '$2'"
@@ -465,9 +447,7 @@ cleanup()
 }
 
 total() {
-    echo ""
-    echo ""
-    echo "Tests passed: $(echo -n $PASSED | wc -m). Tests failed: $(echo -n $FAILED | wc -m)."
+    printf "\n\nTests passed: $(echo -n $PASSED | wc -m). Tests failed: $(echo -n $FAILED | wc -m).\n"
 }
 
 trap cleanup 2
