@@ -76,6 +76,7 @@ tests()
 
     # SETENV
     expect_env_match "setenv A b"
+    expect_env_match "setenv _A b"
     expect_env_match "setenv AB0 b"
     expect_env_match "setenv A_B0 b"
     expect_env_match "setenv A_C b"
