@@ -442,22 +442,22 @@ get_signal_id()
 
 build_signal_sender()
 {
-    echo "
-        #include <sys/prctl.h>
-        #include <sys/types.h>
-        #include <signal.h>
-        #include <unistd.h>
-        #include <stdlib.h>
+    cat <<EOF >/tmp/__minishell_segv_code.c
+#include <stdlib.h>
+#include <signal.h>
+#include <unistd.h>
+#include <sys/prctl.h>
+#include <sys/types.h>
 
-        int main(int argc, char **argv)
-        {
-            if (argc != 3)
-                return (84);
-            prctl(PR_SET_DUMPABLE, atoi(argv[1]) == 0);
-            kill(getpid(), atoi(argv[2]));
-            while (1);
-        }
-    " >/tmp/__minishell_segv_code.c
+int main(int argc, char **argv)
+{
+    if (argc != 3)
+        return (84);
+    prctl(PR_SET_DUMPABLE, atoi(argv[1]) == 0);
+    kill(getpid(), atoi(argv[2]));
+    while (1);
+}
+EOF
 
     gcc -o /tmp/__minishell_segv /tmp/__minishell_segv_code.c
 }
