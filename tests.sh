@@ -44,8 +44,6 @@
 
 tests()
 {
-
-
     # EXECUTE COMMANDS
     expect_stdout_match "ls"
     expect_stdout_match "/bin/ls" # full path
@@ -56,7 +54,6 @@ tests()
 
     WITH_ENV="PATH=" \
     expect_stderr_equals "ls" "ls: Command not found." # no PATH to be found
-
 
     # EXECUTE COMMANDS - relative paths
     if [ -t 0 ]; then # if is a tty, avoids recursion problems
@@ -112,23 +109,11 @@ tests()
     expect_pwd_match "setenv PWD /home"
 
     # SIGNALS
-    expect_signal_message_match SIGSEGV
-    expect_signal_message_match SIGFPE
-    expect_signal_message_match SIGBUS
-    expect_signal_message_match SIGABRT
-
-    WITHOUT_COREDUMP=1 \
-    expect_signal_message_match SIGSEGV
-
-    WITHOUT_COREDUMP=1 \
-    expect_signal_message_match SIGFPE
-
-    WITHOUT_COREDUMP=1 \
-    expect_signal_message_match SIGBUS
-
-    WITHOUT_COREDUMP=1 \
-    expect_signal_message_match SIGABRT
-
+    for i in SIGSEGV SIGFPE SIGBUS SIGABRT
+    do
+        expect_signal_message_match "$i"
+        WITHOUT_COREDUMP=1 expect_signal_message_match "$i"
+    done
 }
 
 
