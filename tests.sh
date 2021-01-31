@@ -157,6 +157,10 @@ if [[ ! -f "./mysh" ]]; then
     exit 84
 fi
 
+# do not load any starting script
+# fixes `builin: not found` errors with proprietary drivers
+alias tcsh="tcsh -f"
+
 PASSED=""
 FAILED=""
 
@@ -282,7 +286,7 @@ expect_env_match()
         echo "With environment variables: $WITH_ENV"
     fi
     echo "---"
-    TCSH_OUTPUT="$(echo "$@"$'\n'"env" | env -i $SAMPLE_ENV tcsh 2>&1 | clean_env | clean_tcsh_stderr)"
+    TCSH_OUTPUT="$(echo "$@"$'\n'"env" | env -i $SAMPLE_ENV tcsh 2>&1 | clean_env)"
     MYSH_OUTPUT="$(echo "$@"$'\n'"env" | env -i $SAMPLE_ENV $WITH_ENV ./mysh 2>&1 | clean_env)"
     DIFF=$(diff --color=always <(echo $TCSH_OUTPUT) <(echo $MYSH_OUTPUT))
     if [[ $DIFF != "" ]]; then
@@ -370,7 +374,7 @@ expect_stderr_match()
         echo "With environment variables: $WITH_ENV"
     fi
     echo "---"
-    DIFF=$(diff --color=always <(echo "$(echo "$@" | tcsh 2>&1 >/dev/null | clean_tcsh_stderr)") <(echo "$(echo "$@" | env $ENV_VAR ./mysh 2>&1 >/dev/null)"))
+    DIFF=$(diff --color=always <(echo "$(echo "$@" | tcsh 2>&1 >/dev/null)") <(echo "$(echo "$@" | env $ENV_VAR ./mysh 2>&1 >/dev/null)"))
     if [[ $DIFF != "" ]]; then
         echo "< tcsh    > mysh"
         echo
@@ -411,11 +415,6 @@ expect_stderr_equals()
         return
     fi
     pass
-}
-
-clean_tcsh_stderr()
-{
-    grep -v -e "builtin: not found" # proprietary drivers can break tcsh stderr sometimes
 }
 
 clean_env()
