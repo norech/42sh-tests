@@ -44,19 +44,14 @@
 
 tests()
 {
-
-
-    # EXECUTE COMMANDS
-    expect_stdout_match "ls"
-    expect_stdout_match "/bin/ls" # full path
-    expect_stdout_match "/bin/ls -a" # full path with args
-    expect_stdout_match "ls -a"
-    expect_stderr_match "egegrgrgegergre" # not existing binary
-    expect_stderr_match "uyiuoijuuyyiy" # not existing binary 2
+    # Some basic command tests. This also tests full paths, arguments, and 2 non-existing binaries
+    for i in "ls" "/bin/ls" "/bin/ls -a" "ls -a" "egrefopkeqwfpokqeofpweqk" "wqopkdwoqpkdopqwkdopqwkdpoqw"
+    do
+        expect_stdout_match "$i"
+    done
 
     WITH_ENV="PATH=" \
     expect_stderr_equals "ls" "ls: Command not found." # no PATH to be found
-
 
     # EXECUTE COMMANDS - relative paths
     if [ -t 0 ]; then # if is a tty, avoids recursion problems
@@ -65,23 +60,16 @@ tests()
     fi
 
     # FORMATTING & SPACING
-    expect_stdout_match " ls -a"
-    expect_stdout_match " ls  -a"
-    expect_stdout_match $'     ls\t\t -a'
-    expect_stdout_match $'     ls\t\t -a\t'
-    expect_stdout_match $'ls -a\t'
-    expect_stdout_match $'ls \t-a\t'
-    expect_stdout_match $'ls\t-a'
-    expect_stdout_match $'\tls -a\t'
+    for i in " ls -a" " ls  -a" $'     ls\t\t -a' $'     ls\t\t -a\t' $'ls -a\t' $'ls \t-a\t' $'ls\t-a' $'\tls -a\t'
+    do
+        expect_stdout_match "$i"
+    done
 
     # SETENV
-    expect_env_match "setenv A b"
-    expect_env_match "setenv _A b"
-    expect_env_match "setenv AB0 b"
-    expect_env_match "setenv A_B0 b"
-    expect_env_match "setenv A_C b"
-    expect_env_match "setenv A"   # variables can be set with one argument
-    expect_env_match "setenv"
+    for i in "setenv A b" "setenv _A b" "setenv AB0 b" "setenv A_B0 b" "setenv A_C b" "setenv A" "setenv"
+    do
+        expect_env_match "$i"
+    done
 
     expect_stderr_match "setenv -A b" # variables must start with a letter
     expect_stderr_match "setenv 0A b" # variables must start with a letter
@@ -112,23 +100,11 @@ tests()
     expect_pwd_match "setenv PWD /home"
 
     # SIGNALS
-    expect_signal_message_match SIGSEGV
-    expect_signal_message_match SIGFPE
-    expect_signal_message_match SIGBUS
-    expect_signal_message_match SIGABRT
-
-    WITHOUT_COREDUMP=1 \
-    expect_signal_message_match SIGSEGV
-
-    WITHOUT_COREDUMP=1 \
-    expect_signal_message_match SIGFPE
-
-    WITHOUT_COREDUMP=1 \
-    expect_signal_message_match SIGBUS
-
-    WITHOUT_COREDUMP=1 \
-    expect_signal_message_match SIGABRT
-
+    for i in SIG{SEGV,FPE,BUS,ABRT}
+    do
+        expect_signal_message_match "$i"
+        WITHOUT_COREDUMP=1 expect_signal_message_match "$i"
+    done
 }
 
 
