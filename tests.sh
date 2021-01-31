@@ -221,7 +221,7 @@ expect_signal_message_match()
     fi
 
     TCSH_OUTPUT=$(echo "/tmp/__minishell_segv $without_core_dump $signal_id" | tcsh 2>&1 1>/dev/null | clean_tcsh_stderr)
-    EXIT1=0 # apparently, marvin does not like 139 exit code, so we return 0
+    EXIT1=0 # Marvin does not like a 139 exit code (it probably thinks we crashed), so instead, check for returning 0
 
     MYSH_OUTPUT=$(echo "/tmp/__minishell_segv $without_core_dump $signal_id" | ./mysh 2>&1 1>/dev/null)
     EXIT2=$?
@@ -236,7 +236,7 @@ expect_signal_message_match()
     fi
 
     if [[ $EXIT1 != $EXIT2 ]]; then
-        fail "Exit code are different (expected $EXIT1, got $EXIT2)."
+        fail "Exit code are different (expected $EXIT1, got $EXIT2). (Note: while tcsh actually returns 139, we assume it returns 0 because Marvin doesn't like it if you return 139)"
         return
     fi
     pass
