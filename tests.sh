@@ -96,14 +96,15 @@ tests()
     expect_exit_code "exit" 0
     expect_exit_code "exit 24" 24
     expect_exit_code "exit 18" 18
+    expect_stderr_match "exit a" # Expression syntax
+    expect_stderr_match "exit 2a" # Badly formed number.
+    expect_stderr_match "exit a b" # Expression syntax
 
     # CD
     expect_stderr_match "cd -"     # previous env was not set
     expect_stderr_match "cd /root" # no permissions to access folder error
     expect_stderr_match "cd /htyg/grrggfghfgdhgfghg" # folder not found error
-    expect_stderr_match "exit a"
-    expect_stderr_match "exit 2a"
-    expect_stderr_match "exit a b"
+
 
     expect_pwd_match "cd ~"
     expect_pwd_match "cd /"

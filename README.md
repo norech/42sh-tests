@@ -15,6 +15,5 @@ A collection of tests for 42sh (presently for minishell)
 ## Install/update script
 
 ```bash
-curl https://raw.githubusercontent.com/norech/42sh-tests/master/tests.sh >tests.sh
-chmod +x tests.sh
+curl -LO https://raw.githubusercontent.com/norech/42sh-tests/master/tests.sh && chmod +x tests.sh
 ```
