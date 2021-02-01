@@ -376,7 +376,11 @@ expect_stderr_match()
     echo "$@" | env $WITH_ENV ./mysh &>/dev/null
     EXIT2=$?
 
-    if [[ $EXIT1 != $EXIT2 ]]; then
+    if [[ $EXIT1 == 1 && $EXIT2 != 84 ]]; then
+        fail "Exit code are different (expected 84, got $EXIT2). (Note: while tcsh actually returns 1, we assume it returns 84 because Marvin expect a 84 code for errors)"
+        return
+    fi
+    if [[ $EXIT1 != 1 && $EXIT1 != $EXIT2 ]]; then
         fail "Exit code are different (expected $EXIT1, got $EXIT2)."
         return
     fi
